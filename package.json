@@ -1,0 +1,34 @@
+{
+  "name": "blog-express-postgresql-passport",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc && node dist/app.js",
+    "lint": "eslint . --ext .ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crzdvl/blog-express-postgresql-passport.git"
+  },
+  "author": "vgrechukha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crzdvl/blog-express-postgresql-passport/issues"
+  },
+  "homepage": "https://github.com/crzdvl/blog-express-postgresql-passport#readme",
+  "description": "",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "4.22.0",
+    "@typescript-eslint/parser": "4.22.0",
+    "eslint": "7.24.0",
+    "husky": "6.0.0",
+    "typescript": "4.2.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm lint"
+    }
+  },
+  "dependencies": {}
+}
