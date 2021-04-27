@@ -1,11 +1,23 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es6",
+    "target": "ESNext",
+    "module": "CommonJS",
+    "lib": ["es6", "dom"],
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "strictPropertyInitialization": false,
     "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist"
+    "baseUrl": ".",
+    "rootDirs": ["./src"],
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["reflect-metadata", "node"],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "lib": ["es2015"]
+  "include": ["./src/**/*.ts"]
 }
