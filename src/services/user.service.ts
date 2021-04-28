@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { getConnection, Repository } from 'typeorm';
 
-import { User } from '../enteties/user';
+import { Users } from '../entities/users';
 
 export interface IUser {
   email: string;
@@ -10,13 +10,13 @@ export interface IUser {
 
 @injectable()
 export class UserService {
-  private repository: Repository<User>;
+  private repository: Repository<Users>;
 
   constructor() {
-    this.repository = getConnection().getRepository<User>('users');
+    this.repository = getConnection().getRepository<Users>('users');
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<Users[]> {
     return this.repository.find();
   }
 }

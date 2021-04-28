@@ -2,13 +2,13 @@ import 'dotenv/config';
 
 import { createConnection } from 'typeorm';
 
-import { User } from '../enteties/user';
+import { Users } from '../entities/users';
 
 export async function getDbConnection() {
-  const { DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_DB } = process.env;
+  const { DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD } = process.env;
   const DATABASE_PORT = 5432;
 
-  const entities = [User];
+  const entities = [Users];
 
   const conn = await createConnection({
     type: 'postgres',
@@ -16,7 +16,7 @@ export async function getDbConnection() {
     port: DATABASE_PORT,
     username: DATABASE_USER,
     password: DATABASE_PASSWORD,
-    synchronize: true,
+    synchronize: false,
     entities,
   });
 
