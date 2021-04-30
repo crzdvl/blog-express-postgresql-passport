@@ -8,5 +8,12 @@ export default class CreateUsersAndRoles implements Seeder {
     const bloggerRole = await factory(Roles)({ role: 'BLOGGER' }).create();
     const userRole = await factory(Roles)({ role: 'USER' }).create();
     await factory(Users)({ roles: [bloggerRole, userRole] }).createMany(10);
+    await factory(Users)({
+      roles: [adminRole],
+      email: 'admin@mail.com',
+      password: 'password',
+      name: 'admin',
+      is_confirmed_email: true,
+    }).create();
   }
 }
