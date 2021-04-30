@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 
-@Entity('users')
+import { Roles } from './roles';
+
+@Entity('user')
 export class Users {
   @PrimaryGeneratedColumn()
   public id: number;
@@ -12,8 +14,11 @@ export class Users {
   public email: string;
 
   @Column()
-  public role: number;
+  password: string;
 
   @Column()
   public is_confirmed_email: boolean;
+
+  @ManyToOne(() => Roles, (role) => role.id)
+  role: Roles;
 }

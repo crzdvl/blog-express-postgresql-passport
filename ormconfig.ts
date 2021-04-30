@@ -4,7 +4,7 @@ export = {
   host: process.env.DATABASE_HOST,
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  synchronize: false,
+  synchronize: true,
   logging: true,
   entities: ['src/entities/*.ts'],
   seeds: ['database/seeds/*.ts'],

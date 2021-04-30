@@ -16,7 +16,7 @@ export async function getDbConnection() {
     port: DATABASE_PORT,
     username: DATABASE_USER,
     password: DATABASE_PASSWORD,
-    synchronize: false,
+    synchronize: true,
     entities,
   });
 
