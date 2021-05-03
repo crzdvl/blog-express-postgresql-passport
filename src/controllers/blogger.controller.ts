@@ -15,8 +15,8 @@ import { UserService } from '../services/user.service';
 import { Users } from '../entities/users';
 import { TYPES } from '../services/types';
 
-@controller('/user')
-export class UserController {
+@controller('/blogger')
+export class BloggerController {
   constructor(@inject(TYPES.UserService) private userService: UserService) {}
 
   @httpGet('/')

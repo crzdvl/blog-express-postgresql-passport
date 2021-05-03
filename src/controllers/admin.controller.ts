@@ -20,13 +20,13 @@ export class AdminController {
   constructor(@inject(TYPES.UserService) private userService: UserService) {}
 
   @httpGet('/')
-  public async getUsers(): Promise<Users[]> {
-    const allUsers: Users[] = await this.userService.getAllUsers();
+  public async getUsers(@queryParam('page') page: number): Promise<Users[]> {
+    const allUsers: Users[] = await this.userService.getAllUsers(page);
 
     return allUsers;
   }
 
-  @httpGet('/:id')
+  @httpGet('/')
   public async getUserById(@queryParam('id') id: number): Promise<Users | undefined> {
     const user: Users | undefined = await this.userService.getUserById(id);
 

@@ -22,11 +22,16 @@ export class UserService {
     this.repository = getConnection().getRepository<Users>('users');
   }
 
-  async getAllUsers(): Promise<Users[]> {
-    return this.repository.find();
+  async getAllUsers(page: number): Promise<Users[]> {
+    console.log(page, page !== undefined ? page : 0);
+    return this.repository.find({
+      skip: page !== undefined ? page * 5 : 0,
+      take: 5,
+    });
   }
 
   async getUserById(id: number): Promise<Users | undefined> {
+    console.log(id);
     return this.repository.findOne(id);
   }
 
