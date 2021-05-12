@@ -1,11 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    OneToMany,
+    BeforeInsert,
 } from 'typeorm';
+import bcrypt from 'bcrypt';
 
 import { Roles } from './roles';
+import { Tokens } from './tokens';
 
 @Entity('users')
 export class Users {
@@ -29,4 +33,14 @@ export class Users {
 
   @Column()
   public roleId: number;
+
+  @OneToMany(() => Tokens, (token) => token.id, {
+      cascade: true,
+  })
+  tokens: Tokens[];
+
+  @BeforeInsert()
+  async setPassword(password: string) {
+      this.password = await bcrypt.hash(password || this.password, 5);
+  }
 }

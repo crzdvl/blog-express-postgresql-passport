@@ -1,25 +1,25 @@
-import 'dotenv/config';
-
 import { createConnection } from 'typeorm';
 
 import { Users } from '../entities/users';
 import { Roles } from '../entities/roles';
+import { Tokens } from '../entities/tokens';
 
 export async function getDbConnection() {
-  const { DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD } = process.env;
-  const DATABASE_PORT = 5432;
+    const { DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME } = process.env;
+    const DATABASE_PORT = 5432;
 
-  const entities = [Users, Roles];
+    const entities = [Users, Roles, Tokens];
 
-  const conn = await createConnection({
-    type: 'postgres',
-    host: DATABASE_HOST,
-    port: DATABASE_PORT,
-    username: DATABASE_USER,
-    password: DATABASE_PASSWORD,
-    synchronize: false,
-    entities,
-  });
+    const conn = await createConnection({
+        type: 'postgres',
+        host: DATABASE_HOST,
+        port: DATABASE_PORT,
+        username: DATABASE_USER,
+        password: DATABASE_PASSWORD,
+        database: DATABASE_NAME,
+        synchronize: true,
+        entities,
+    });
 
-  return conn;
+    return conn;
 }

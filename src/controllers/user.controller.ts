@@ -2,6 +2,7 @@ import {
     controller,
     httpGet,
 } from 'inversify-express-utils';
+
 import { Users } from '../entities/users';
 import { BaseController } from './base.controller';
 

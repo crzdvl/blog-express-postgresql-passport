@@ -3,17 +3,13 @@ import { inject, injectable } from 'inversify';
 import {
     httpGet,
     httpPut,
-    httpDelete,
-    httpPost,
     request,
     queryParam,
-    controller,
 } from 'inversify-express-utils';
-import { DeleteResult } from 'typeorm';
-import { UserService } from '../services/user.service';
+
 import { TYPES } from '../services/types';
 import { Users } from '../entities/users';
-
+import { UserService } from '../services/user.service';
 import { OperationsDTO } from '../models/operations.model';
 
 @injectable()
@@ -25,23 +21,13 @@ export abstract class BaseController<T> implements OperationsDTO<T> {
         return this.userService.getAllUsers(page);
     }
 
-    @httpGet('/:id')
+    @httpGet('/findOne')
     public async findOne(@queryParam('id') id: number): Promise<Users> {
         return this.userService.getUserById(id);
-    }
-
-    @httpPost('/')
-    public async create(@request() req: express.Request): Promise<Users> {
-        return this.userService.createUser(req.body);
     }
 
     @httpPut('/')
     public async update(@request() req: express.Request): Promise<Users> {
         return this.userService.updateUser(req.body);
-    }
-
-    @httpDelete('/')
-    public async delete(@queryParam('id') id: number): Promise<DeleteResult> {
-        return this.userService.deleteUserById(id);
     }
 }

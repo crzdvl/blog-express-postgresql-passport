@@ -1,4 +1,4 @@
-export interface NewUser {
+export interface UserDataDTO {
   name: string;
   email: string;
   password: string;
@@ -6,9 +6,15 @@ export interface NewUser {
   role: number;
 }
 
-export interface UpdatedUser {
+export interface DBUserDataDTO {
   id: number;
   name: string;
   email: string;
   password: string;
+}
+
+export interface JwtUserInfmDTO {
+  id: number;
+  name: string;
+  email: string;
 }
