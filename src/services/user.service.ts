@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 
 import { Users } from '../entities/users';
-import { DBUserDataDTO } from '../models/user.model';
+import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 
 export interface IUser {
   email: string;

@@ -1,9 +1,17 @@
 import * as express from 'express';
 import { HttpError } from 'http-errors';
+import ValidationError from '../error/ValidationError';
 
 export const errConfig = (app: express.Application): void => {
     app.use((err: HttpError, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        const status = err.status ? err.status : 500;
+        if (err instanceof ValidationError) {
+            return res.status(422).json({
+                error: err.name,
+                details: err.message,
+            });
+        }
+
+        const status = err.status || 500;
 
         res.status(status);
 

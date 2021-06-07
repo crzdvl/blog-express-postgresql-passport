@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { Users } from 'src/entities/users';
+import { Users } from '../entities/users';
 
 export interface OperationsDTO<T> {
   update(req: express.Request): Promise<Users>;

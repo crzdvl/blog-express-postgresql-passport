@@ -1,20 +1,33 @@
-export interface UserDataDTO {
-  name: string;
-  email: string;
-  password: string;
-  is_confirmed_email: boolean;
-  role: number;
-}
+import {
+    IsEmail,
+    IsArray,
+    ArrayMaxSize,
+    ArrayNotEmpty,
+    Length,
+} from 'class-validator';
 
-export interface DBUserDataDTO {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-}
+export class UserModel {
+    @Length(3, 16, {
+        message: 'Name needs to have $constraint1 - $constraint2 characters.',
+    })
+    name: string;
 
-export interface JwtUserInfmDTO {
-  id: number;
-  name: string;
-  email: string;
+    @IsEmail({}, {
+        message: 'Your email is\'nt valid.',
+    })
+    email: string;
+
+    @Length(6, 16, {
+        message: 'Password needs to have $constraint1 - $constraint2 characters.',
+    })
+    password: string;
+
+    @IsArray()
+    @ArrayMaxSize(2)
+    @ArrayNotEmpty()
+    roles: [];
+
+    constructor(source: Partial<UserModel>) {
+        Object.assign(this, source);
+    }
 }

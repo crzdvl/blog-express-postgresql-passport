@@ -2,9 +2,10 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    ManyToOne,
     OneToMany,
     BeforeInsert,
+    JoinTable,
+    ManyToMany,
 } from 'typeorm';
 import bcrypt from 'bcrypt';
 
@@ -13,34 +14,34 @@ import { Tokens } from './tokens';
 
 @Entity('users')
 export class Users {
-  @PrimaryGeneratedColumn()
-  public id: number;
+    @PrimaryGeneratedColumn()
+    public id: number;
 
-  @Column()
-  public name: string;
+    @Column()
+    public name: string;
 
-  @Column()
-  public email: string;
+    @Column()
+    public email: string;
 
-  @Column()
-  password: string;
+    @Column()
+    password: string;
 
-  @Column()
-  public is_confirmed_email: boolean;
+    @Column()
+    public is_confirmed_email: boolean;
 
-  @ManyToOne(() => Roles, (role) => role.id)
-  role: Roles;
+    @ManyToMany(() => Roles, (role) => role.id, {
+        cascade: true,
+    })
+    @JoinTable()
+    roles: Roles[];
 
-  @Column()
-  public roleId: number;
+    @OneToMany(() => Tokens, (token) => token.id, {
+        cascade: true,
+    })
+    tokens: Tokens[];
 
-  @OneToMany(() => Tokens, (token) => token.id, {
-      cascade: true,
-  })
-  tokens: Tokens[];
-
-  @BeforeInsert()
-  async setPassword(password: string) {
-      this.password = await bcrypt.hash(password || this.password, 5);
-  }
+    @BeforeInsert()
+    async setPassword(password: string) {
+        this.password = await bcrypt.hash(password || this.password, 5);
+    }
 }

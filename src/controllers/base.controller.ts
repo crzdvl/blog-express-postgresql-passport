@@ -10,11 +10,11 @@ import {
 import { TYPES } from '../services/types';
 import { Users } from '../entities/users';
 import { UserService } from '../services/user.service';
-import { OperationsDTO } from '../models/operations.model';
+import { OperationsDTO } from '../interfaces/OperationsDTO';
 
 @injectable()
 export abstract class BaseController<T> implements OperationsDTO<T> {
-    constructor(@inject(TYPES.UserService) public userService: UserService) {}
+    @inject(TYPES.UserService) public userService: UserService;
 
     @httpGet('/')
     public async find(@queryParam('page') page: number): Promise<Users[]> {
