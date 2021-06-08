@@ -16,6 +16,7 @@ import { AuthService } from '../services/auth.service';
 import { BaseService } from '../services/base.service';
 
 import ValidationError from '../error/ValidationError';
+import { UserSerializer } from '../config/jsonApiSerializer';
 
 @controller('/auth')
 export class AuthController extends BaseHttpController {
@@ -35,14 +36,15 @@ export class AuthController extends BaseHttpController {
         const access_token = await this.authService.generateToken(userDataResult, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(userDataResult, 'refresh_token', 86400);
 
-        return this.json({
-            user: {
+        return this.json(
+            UserSerializer.serialize({
                 name: userDataResult.name,
                 email: userDataResult.email,
-            },
-            access_token: access_token.token,
-            refresh_token: refresh_token.token,
-        });
+
+                access_token: access_token.token,
+                refresh_token: refresh_token.token,
+            }),
+        );
     }
 
     @httpPost('/login')
@@ -57,14 +59,15 @@ export class AuthController extends BaseHttpController {
         const access_token = await this.authService.generateToken(userDataResult, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(userDataResult, 'refresh_token', 86400);
 
-        return this.json({
-            user: {
+        return this.json(
+            UserSerializer.serialize({
                 name: userDataResult.name,
                 email: userDataResult.email,
-            },
-            access_token: access_token.token,
-            refresh_token: refresh_token.token,
-        });
+
+                access_token: access_token.token,
+                refresh_token: refresh_token.token,
+            }),
+        );
     }
 
     @httpPost('/refresh')
@@ -82,14 +85,15 @@ export class AuthController extends BaseHttpController {
         const access_token = await this.authService.generateToken(decodedToken, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(decodedToken, 'refresh_token', 86400);
 
-        return this.json({
-            userData: {
+        return this.json(
+            UserSerializer.serialize({
                 name: decodedToken.name,
                 email: decodedToken.email,
-            },
-            access_token: access_token.token,
-            refresh_token: refresh_token.token,
-        });
+
+                access_token: access_token.token,
+                refresh_token: refresh_token.token,
+            }),
+        );
     }
 
     @httpDelete('/delete')
