@@ -121,7 +121,7 @@ export class AuthService {
         });
     }
 
-    async confirmEmailVerificationInDB(tokenData: Tokens) {
+    async confirmEmailVerificationInDB(tokenData: Tokens): Promise<Users> {
         const user = await this.usersRepository.findOneOrFail(tokenData.userId);
         const updatedUser = Object.assign(user, tokenData.userId, { is_confirmed_email: true });
 

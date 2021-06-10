@@ -26,7 +26,7 @@ export class AuthController extends BaseHttpController {
 
     @inject(TYPES.BaseService) public baseService: BaseService;
 
-    @httpPost('/register')
+    @httpPost('/signup')
     public async create(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserSignupModel = new UserSignupModel({ ...req.body });
 
@@ -46,7 +46,7 @@ export class AuthController extends BaseHttpController {
         );
     }
 
-    @httpPost('/login')
+    @httpPost('/signin')
     public async loginUser(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserLoginModel = new UserLoginModel({ ...req.body });
 
