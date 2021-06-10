@@ -5,7 +5,7 @@ import * as express from 'express';
 import {
     controller, httpPost, httpGet, request, BaseHttpController, httpDelete, queryParam,
 } from 'inversify-express-utils';
-import { JsonResult, BadRequestErrorMessageResult } from 'inversify-express-utils/dts/results';
+import { JsonResult, BadRequestErrorMessageResult, RedirectResult } from 'inversify-express-utils/dts/results';
 
 import UserSignupModel from '../models/userSignup.model';
 import UserLoginModel from '../models/userLogin.model';
@@ -100,17 +100,13 @@ export class AuthController extends BaseHttpController {
     }
 
     @httpGet('/verificateEmail')
-    public async verificateEmail(@queryParam('token') token: string): Promise<JsonResult> {
+    public async verificateEmail(@queryParam('token') token: string): Promise<RedirectResult> {
         const tokenInDB = await this.authService.getTokenFromDB(token, 'email_token');
         if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
 
         const decodedToken = await this.authService.verifyToken(token);
         await this.authService.confirmEmailVerificationInDB(decodedToken);
 
-        return this.json(
-            AuthSerializer.serialize({
-                isConfirmedEmail: true,
-            }),
-        );
+        return this.redirect(process.env.FRONTEND_HOST!);
     }
 }
