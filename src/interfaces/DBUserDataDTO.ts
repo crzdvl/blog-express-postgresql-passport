@@ -1,6 +1,7 @@
 export interface DBUserDataDTO {
   id: number;
-  name: string;
+  name?: string;
   email: string;
-  password: string;
+  password?: string;
+  is_confirmed_email?: boolean;
 }

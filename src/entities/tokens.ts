@@ -8,7 +8,7 @@ import {
 
 import { Users } from './users';
 
-export type TokenType = 'access_token' | 'refresh_token';
+export type TokenType = 'access_token' | 'refresh_token' | 'email_token';
 
 @Entity('tokens')
 export class Tokens {
@@ -17,7 +17,7 @@ export class Tokens {
 
   @Column({
       type: 'enum',
-      enum: ['access_token', 'refresh_token'],
+      enum: ['access_token', 'refresh_token', 'email_token'],
   })
   public type: TokenType;
 

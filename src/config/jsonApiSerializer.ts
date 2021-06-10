@@ -1,7 +1,7 @@
 import { Serializer } from 'jsonapi-serializer';
 
-const UserSerializer = new Serializer('users', {
-    attributes: ['name', 'email', 'access_token', 'refresh_token'],
+const AuthSerializer = new Serializer('auth', {
+    attributes: ['name', 'email', 'access_token', 'refresh_token', 'isConfirmedEmail'],
 });
 
-export { UserSerializer };
+export { AuthSerializer };

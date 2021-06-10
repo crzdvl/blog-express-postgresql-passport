@@ -1,4 +1,3 @@
-import axios from 'axios';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { inject, injectable } from 'inversify';
@@ -7,13 +6,17 @@ import { DeleteResult, getConnection, Repository } from 'typeorm';
 import { Users } from '../entities/users';
 import { Roles } from '../entities/roles';
 
-import { UserModel } from '../models/user.model';
+import UserSignupModel from '../models/userSignup.model';
+import UserLoginModel from '../models/userLogin.model';
+
 import { Tokens, TokenType } from '../entities/tokens';
 import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 import { JwtUserInfmDTO } from '../interfaces/JwtUserInfmDTO';
 
 import { TYPES } from './types';
 import { UserService } from './user.service';
+import nodemailerTransporter from '../config/nodemailerTransporter';
+import ValidationError from '../error/ValidationError';
 
 @injectable()
 export class AuthService {
@@ -29,7 +32,7 @@ export class AuthService {
         this.usersRepository = getConnection().getRepository<Users>('users');
     }
 
-    async register(userData: UserModel): Promise<Users> {
+    async register(userData: UserSignupModel): Promise<Users> {
         const hashedPassword = await bcrypt.hash(userData.password, 5);
 
         const userRoles = [];
@@ -47,20 +50,24 @@ export class AuthService {
         });
     }
 
-    async authenticate(userData: UserModel): Promise<Users> {
+    async authenticate(userData: UserLoginModel): Promise<Users> {
         const userFound = await this.userService.getUserByEmail(userData.email);
+
+        if (!userFound.is_confirmed_email) {
+            throw new ValidationError('You need to confirm your email first');
+        }
 
         const passwordIsGood = await bcrypt.compare(userData.password, userFound.password);
 
         if (!passwordIsGood) {
-            throw new Error('Bad Password');
+            throw new ValidationError('Your password is incorrect');
         }
 
         return userFound;
     }
 
-    async getTokenFromDB(token: string, type: TokenType): Promise<Tokens> {
-        return this.tokensRepository.findOneOrFail({ token, type });
+    async getTokenFromDB(token: string, type: TokenType): Promise<Tokens | undefined> {
+        return this.tokensRepository.findOne({ token, type });
     }
 
     async generateToken(
@@ -98,27 +105,26 @@ export class AuthService {
         return this.usersRepository.delete(id);
     }
 
-    async sendVerificationEmail(email: string): Promise<DeleteResult> {
-        const { data } = await axios.post('https://api.sendgrid.com/v3/mail/send', {
-            headers: {
-                'Authorization: Bearer': '<<YOUR_API_KEY>>',
-                'Content- Type': 'application/jso\'n',
-            },
-            params: {
-                personalizations: [
-                    {
-                        to: [
-                            {
-                                email: 'john.doe@example.com', name: 'John Doe',
-                            }],
-                        subject: 'Hello, World!',
-                    }],
-                content: [{ type: 'text/plain', value: 'Heya!' }],
-                from: { email: 'sam.smith@example.com', name: 'Sam Smith' },
-                reply_to: { email: 'sam.smith@example.com', name: 'Sam Smith' },
-            },
+    async sendEmailVerification(email: string, token: string): Promise<any> {
+        return nodemailerTransporter.sendMail({
+            from: '"BLOG 👻" <foo@example.com>',
+            to: email,
+            subject: 'BLOG email verification ✔',
+            html: `
+                <p>Hello ✔, please confirm your email</p>
+                <br>
+                <b>
+                    <a href="${process.env.HOST}/auth/verificateEmail?token=${token}">
+                        Just click here to do it :)
+                    </a>
+                </b>`,
         });
+    }
 
-        return data || 'ok';
+    async confirmEmailVerificationInDB(tokenData: Tokens) {
+        const user = await this.usersRepository.findOneOrFail(tokenData.userId);
+        const updatedUser = Object.assign(user, tokenData.userId, { is_confirmed_email: true });
+
+        return this.usersRepository.save(updatedUser);
     }
 }

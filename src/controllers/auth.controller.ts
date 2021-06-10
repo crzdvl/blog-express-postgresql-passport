@@ -3,11 +3,13 @@ import { DeleteResult } from 'typeorm';
 import { inject } from 'inversify';
 import * as express from 'express';
 import {
-    controller, httpPost, request, BaseHttpController, httpDelete, queryParam,
+    controller, httpPost, httpGet, request, BaseHttpController, httpDelete, queryParam,
 } from 'inversify-express-utils';
 import { JsonResult, BadRequestErrorMessageResult } from 'inversify-express-utils/dts/results';
 
-import { UserModel } from '../models/user.model';
+import UserSignupModel from '../models/userSignup.model';
+import UserLoginModel from '../models/userLogin.model';
+
 import { RefreshTokenModel } from '../models/token.model';
 import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 
@@ -16,7 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { BaseService } from '../services/base.service';
 
 import ValidationError from '../error/ValidationError';
-import { UserSerializer } from '../config/jsonApiSerializer';
+import { AuthSerializer } from '../config/jsonApiSerializer';
 
 @controller('/auth')
 export class AuthController extends BaseHttpController {
@@ -26,41 +28,37 @@ export class AuthController extends BaseHttpController {
 
     @httpPost('/register')
     public async create(@request() req: express.Request): Promise<JsonResult> {
-        const userData: UserModel = new UserModel({ ...req.body });
+        const userData: UserSignupModel = new UserSignupModel({ ...req.body });
 
         const error = await this.baseService.validateData(userData);
         if (!_.isNull(error)) throw new ValidationError(error);
 
         const userDataResult: DBUserDataDTO = await this.authService.register(req.body);
 
-        const access_token = await this.authService.generateToken(userDataResult, 'access_token', 3600);
-        const refresh_token = await this.authService.generateToken(userDataResult, 'refresh_token', 86400);
+        const email_token = await this.authService.generateToken(userDataResult, 'email_token', 3600);
+        await this.authService.sendEmailVerification(userDataResult.email, email_token.token);
 
         return this.json(
-            UserSerializer.serialize({
+            AuthSerializer.serialize({
                 name: userDataResult.name,
                 email: userDataResult.email,
-
-                access_token: access_token.token,
-                refresh_token: refresh_token.token,
             }),
         );
     }
 
     @httpPost('/login')
     public async loginUser(@request() req: express.Request): Promise<JsonResult> {
-        const userData: UserModel = new UserModel({ ...req.body });
+        const userData: UserLoginModel = new UserLoginModel({ ...req.body });
 
         const error = await this.baseService.validateData(userData);
         if (!_.isNull(error)) throw new ValidationError(error);
 
         const userDataResult: DBUserDataDTO = await this.authService.authenticate(req.body);
-
         const access_token = await this.authService.generateToken(userDataResult, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(userDataResult, 'refresh_token', 86400);
 
         return this.json(
-            UserSerializer.serialize({
+            AuthSerializer.serialize({
                 name: userDataResult.name,
                 email: userDataResult.email,
 
@@ -78,7 +76,7 @@ export class AuthController extends BaseHttpController {
         if (!_.isNull(error)) throw new ValidationError(error);
 
         const tokenInDB = await this.authService.getTokenFromDB(userToken.refresh_token, 'refresh_token');
-        if (_.isUndefined(tokenInDB)) return this.badRequest('token isn\'t valid more');
+        if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
 
         const decodedToken = await this.authService.verifyToken(userToken.refresh_token);
 
@@ -86,7 +84,7 @@ export class AuthController extends BaseHttpController {
         const refresh_token = await this.authService.generateToken(decodedToken, 'refresh_token', 86400);
 
         return this.json(
-            UserSerializer.serialize({
+            AuthSerializer.serialize({
                 name: decodedToken.name,
                 email: decodedToken.email,
 
@@ -99,5 +97,20 @@ export class AuthController extends BaseHttpController {
     @httpDelete('/delete')
     public async delete(@queryParam('id') id: number): Promise<DeleteResult> {
         return this.authService.deleteUser(id);
+    }
+
+    @httpGet('/verificateEmail')
+    public async verificateEmail(@queryParam('token') token: string): Promise<JsonResult> {
+        const tokenInDB = await this.authService.getTokenFromDB(token, 'email_token');
+        if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
+
+        const decodedToken = await this.authService.verifyToken(token);
+        await this.authService.confirmEmailVerificationInDB(decodedToken);
+
+        return this.json(
+            AuthSerializer.serialize({
+                isConfirmedEmail: true,
+            }),
+        );
     }
 }

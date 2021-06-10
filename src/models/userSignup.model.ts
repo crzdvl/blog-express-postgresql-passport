@@ -6,7 +6,7 @@ import {
     Length,
 } from 'class-validator';
 
-export class UserModel {
+export default class UserSignupModel {
     @Length(3, 16, {
         message: 'Name needs to have $constraint1 - $constraint2 characters.',
     })
@@ -27,7 +27,7 @@ export class UserModel {
     @ArrayNotEmpty()
     roles: [];
 
-    constructor(source: Partial<UserModel>) {
+    constructor(source: Partial<UserSignupModel>) {
         Object.assign(this, source);
     }
 }
