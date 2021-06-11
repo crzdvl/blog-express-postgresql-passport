@@ -35,10 +35,20 @@ export class AuthService {
     async register(userData: UserSignupModel): Promise<Users> {
         const hashedPassword = await bcrypt.hash(userData.password, 5);
 
+        this.userService.getUserById(1);
+
         const userRoles = [];
         // eslint-disable-next-line no-restricted-syntax
         for (const role of userData.roles) {
             userRoles.push(this.rolesRepository.findOneOrFail({ role }));
+        }
+
+        const roles = await this.rolesRepository
+            .createQueryBuilder('roles')
+            .where(':role in (:...roles)', { roles: userData.roles });
+
+        if (roles.length !== userData.roles.length) {
+            return; // blabla bla wrong role
         }
 
         return this.usersRepository.save({
@@ -90,35 +100,14 @@ export class AuthService {
     }
 
     async verifyToken(token: string): Promise<string | any> {
-        try {
-            const decoded = await jwt.verify(token, process.env.TOKEN_SECRET!);
-            await this.tokensRepository.delete({ token });
+        const decoded = await jwt.verify(token, process.env.TOKEN_SECRET!);
+        await this.tokensRepository.delete({ token });
 
-            return decoded;
-        } catch (err) {
-            await this.tokensRepository.delete({ token });
-            return err;
-        }
+        return decoded;
     }
 
     async deleteUser(id: number): Promise<DeleteResult> {
         return this.usersRepository.delete(id);
-    }
-
-    async sendEmailVerification(email: string, token: string): Promise<any> {
-        return nodemailerTransporter.sendMail({
-            from: '"BLOG 👻" <foo@example.com>',
-            to: email,
-            subject: 'BLOG email verification ✔',
-            html: `
-                <p>Hello ✔, please confirm your email</p>
-                <br>
-                <b>
-                    <a href="${process.env.BACKEND_HOST}/auth/verificateEmail?token=${token}">
-                        Just click here to do it :)
-                    </a>
-                </b>`,
-        });
     }
 
     async confirmEmailVerificationInDB(tokenData: Tokens): Promise<Users> {

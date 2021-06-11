@@ -12,22 +12,25 @@ import { Users } from '../entities/users';
 import { UserService } from '../services/user.service';
 import { OperationsDTO } from '../interfaces/OperationsDTO';
 
-@injectable()
-export abstract class BaseController<T> implements OperationsDTO<T> {
-    @inject(TYPES.UserService) public userService: UserService;
+interface BaseCrudService {
+    find(page: any): any;
+    update(id: any): any;
+    tratata(payload: any): any;
+}
 
-    @httpGet('/')
-    public async find(@queryParam('page') page: number): Promise<Users[]> {
-        return this.userService.getAllUsers(page);
+export abstract class BaseController<T extends BaseCrudService> implements OperationsDTO<T> {
+    constructor(private service: T) {
     }
 
-    @httpGet('/findOne')
-    public async findOne(@queryParam('id') id: number): Promise<Users> {
-        return this.userService.getUserById(id);
+    public async find(page: number): Promise<T[]> {
+        return this.service.find(page);
     }
 
-    @httpPut('/')
-    public async update(@request() req: express.Request): Promise<Users> {
-        return this.userService.updateUser(req.body);
+    public async findOne(id: number): Promise<T> {
+        return this.service.update(id);
+    }
+
+    public async update(@request() req: express.Request): Promise<T> {
+        return this.service.tratata(req.body);
     }
 }

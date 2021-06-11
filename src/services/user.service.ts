@@ -23,7 +23,7 @@ export class UserService {
 
   async getAllUsers(page: number): Promise<Users[]> {
       return this.repository.find({
-          skip: page !== undefined ? page * 5 : 0,
+          skip: page ? page * 5 : 0,
           take: 5,
       });
   }
