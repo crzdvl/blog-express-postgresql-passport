@@ -27,6 +27,9 @@ export class Tokens {
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
   public created_at: string;
 
+  @Column({ type: 'timestamp' })
+  public finished_at: string;
+
   @ManyToOne(() => Users, (user) => user.id, { onDelete: 'CASCADE' })
   user: Users;
 

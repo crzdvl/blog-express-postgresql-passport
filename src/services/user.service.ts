@@ -21,14 +21,14 @@ export class UserService {
       this.repository = getConnection().getRepository<Users>('users');
   }
 
-  async getAllUsers(page: number): Promise<Users[]> {
+  async getAll(page: number): Promise<Users[]> {
       return this.repository.find({
           skip: page ? page * 5 : 0,
           take: 5,
       });
   }
 
-  async getUserById(id: number): Promise<Users> {
+  async getById(id: number): Promise<Users> {
       return this.repository.findOneOrFail(id);
   }
 
@@ -36,7 +36,7 @@ export class UserService {
       return this.repository.findOneOrFail({ email });
   }
 
-  async updateUser(userData: DBUserDataDTO): Promise<Users> {
+  async update(userData: DBUserDataDTO): Promise<Users> {
       const hashedPassword = await bcrypt.hash(userData.password, 5);
 
       return this.repository.save({

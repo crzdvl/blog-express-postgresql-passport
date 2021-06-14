@@ -16,6 +16,7 @@ import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 import { TYPES } from '../services/types';
 import { AuthService } from '../services/auth.service';
 import { BaseService } from '../services/base.service';
+import { MailService } from '../services/mail.service';
 
 import ValidationError from '../error/ValidationError';
 import { AuthSerializer } from '../config/jsonApiSerializer';
@@ -26,6 +27,8 @@ export class AuthController extends BaseHttpController {
 
     @inject(TYPES.BaseService) public baseService: BaseService;
 
+    @inject(TYPES.MailService) public mailService: MailService;
+
     @httpPost('/signup')
     public async create(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserSignupModel = new UserSignupModel({ ...req.body });
@@ -35,8 +38,8 @@ export class AuthController extends BaseHttpController {
 
         const userDataResult: DBUserDataDTO = await this.authService.register(req.body);
 
-        const email_token = await this.authService.generateToken(userDataResult, 'email_token', 3600);
-        await this.authService.sendEmailVerification(userDataResult.email, email_token.token);
+        const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
+        await this.mailService.sendEmailVerification(userDataResult.email, email_token.token);
 
         return this.json(
             AuthSerializer.serialize({

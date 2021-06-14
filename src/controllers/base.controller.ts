@@ -1,36 +1,30 @@
 import * as express from 'express';
-import { inject, injectable } from 'inversify';
-import {
-    httpGet,
-    httpPut,
-    request,
-    queryParam,
-} from 'inversify-express-utils';
+import { injectable } from 'inversify';
+import { httpGet, httpPut, queryParam, request } from 'inversify-express-utils';
 
-import { TYPES } from '../services/types';
-import { Users } from '../entities/users';
-import { UserService } from '../services/user.service';
-import { OperationsDTO } from '../interfaces/OperationsDTO';
-
-interface BaseCrudService {
-    find(page: any): any;
-    update(id: any): any;
-    tratata(payload: any): any;
+// FIX: get rid of 'any' types
+export interface BaseCrudService {
+    getAll(page: number): Promise<any[]>;
+    getById(id: number): Promise<any>;
+    update(data: any): Promise<any>;
 }
 
-export abstract class BaseController<T extends BaseCrudService> implements OperationsDTO<T> {
-    constructor(private service: T) {
+@injectable()
+export abstract class BaseController<T extends BaseCrudService> {
+    constructor(public service: T) {}
+
+    @httpGet('/')
+    public async find(@queryParam('page') page: number): Promise<T[]> {
+        return this.service.getAll(page);
     }
 
-    public async find(page: number): Promise<T[]> {
-        return this.service.find(page);
+    @httpGet('/findOne')
+    public async findOne(@queryParam('id') id: number): Promise<T> {
+        return this.service.getById(id);
     }
 
-    public async findOne(id: number): Promise<T> {
-        return this.service.update(id);
-    }
-
+    @httpPut('/')
     public async update(@request() req: express.Request): Promise<T> {
-        return this.service.tratata(req.body);
+        return this.service.update(req.body);
     }
 }

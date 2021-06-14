@@ -1,11 +1,14 @@
-import nodemailerTransporter from "src/config/nodemailerTransporter";
+import { injectable } from 'inversify';
+import nodemailerTransporter from '../config/nodemailerTransporter';
 
-async sendEmailVerification(email: string, token: string): Promise<any> {
-    return nodemailerTransporter.sendMail({
-        from: '"BLOG 👻" <foo@example.com>',
-        to: email,
-        subject: 'BLOG email verification ✔',
-        html: `
+@injectable()
+export class MailService {
+    async sendEmailVerification(email: string, token: string): Promise<any> {
+        return nodemailerTransporter.sendMail({
+            from: '"BLOG 👻" <foo@example.com>',
+            to: email,
+            subject: 'BLOG email verification ✔',
+            html: `
                 <p>Hello ✔, please confirm your email</p>
                 <br>
                 <b>
@@ -13,5 +16,6 @@ async sendEmailVerification(email: string, token: string): Promise<any> {
                         Just click here to do it :)
                     </a>
                 </b>`,
-    });
+        });
+    }
 }

@@ -13,6 +13,8 @@ import { getDbConnection } from './config/db';
 import { config } from './config/inversify.server.config';
 import { errConfig } from './config/inversify.server.errConfig';
 
+import expiredTokenCleaner from './jobs/expired-token-cleaner';
+
 (async () => {
     await getDbConnection();
 
@@ -27,6 +29,8 @@ import { errConfig } from './config/inversify.server.errConfig';
     const server = app.build();
 
     server.listen(port, () => {
+        expiredTokenCleaner.start();
+
         console.log(`Server running at http://127.0.0.1:${port}/`);
     });
 })();

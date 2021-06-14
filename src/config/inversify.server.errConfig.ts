@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import * as express from 'express';
 import { HttpError } from 'http-errors';
 import ValidationError from '../error/ValidationError';
@@ -17,7 +18,7 @@ export const errConfig = (app: express.Application): void => {
 
         const message = status >= 500 ? 'INTERNAL_SERVER_ERROR' : err.message;
 
-        console.error(err);
+        console.error(chalk.bold.red(err));
 
         return res.json({
             message,

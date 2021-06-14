@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { inject, injectable } from 'inversify';
-import { DeleteResult, getConnection, Repository } from 'typeorm';
+import { DeleteResult, getConnection, In, Repository } from 'typeorm';
 
+import { date } from 'faker';
 import { Users } from '../entities/users';
 import { Roles } from '../entities/roles';
 
@@ -15,7 +16,6 @@ import { JwtUserInfmDTO } from '../interfaces/JwtUserInfmDTO';
 
 import { TYPES } from './types';
 import { UserService } from './user.service';
-import nodemailerTransporter from '../config/nodemailerTransporter';
 import ValidationError from '../error/ValidationError';
 
 @injectable()
@@ -35,28 +35,17 @@ export class AuthService {
     async register(userData: UserSignupModel): Promise<Users> {
         const hashedPassword = await bcrypt.hash(userData.password, 5);
 
-        this.userService.getUserById(1);
-
-        const userRoles = [];
-        // eslint-disable-next-line no-restricted-syntax
-        for (const role of userData.roles) {
-            userRoles.push(this.rolesRepository.findOneOrFail({ role }));
-        }
-
         const roles = await this.rolesRepository
-            .createQueryBuilder('roles')
-            .where(':role in (:...roles)', { roles: userData.roles });
-
-        if (roles.length !== userData.roles.length) {
-            return; // blabla bla wrong role
-        }
+            .find({
+                where: { role: In(userData.roles) },
+            });
 
         return this.usersRepository.save({
             name: userData.name,
             email: userData.email,
             password: hashedPassword,
             is_confirmed_email: false,
-            roles: await Promise.all(userRoles),
+            roles,
         });
     }
 
@@ -92,10 +81,14 @@ export class AuthService {
         },
             process.env.TOKEN_SECRET!, { expiresIn });
 
+        // current time in ms + expires in coverted from s to ms
+        const finished_at = new Date(new Date().getTime() + expiresIn * 1000).toISOString();
+
         return this.tokensRepository.save({
             type,
             token,
             userId: userData.id,
+            finished_at,
         });
     }
 
