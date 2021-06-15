@@ -4,6 +4,7 @@ import { inject, injectable } from 'inversify';
 import { DeleteResult, getConnection, In, Repository } from 'typeorm';
 
 import { date } from 'faker';
+import _ from 'lodash';
 import { Users } from '../entities/users';
 import { Roles } from '../entities/roles';
 
@@ -51,9 +52,10 @@ export class AuthService {
 
     async authenticate(userData: UserLoginModel): Promise<Users> {
         const userFound = await this.userService.getUserByEmail(userData.email);
+        if (_.isUndefined(userFound)) throw new ValidationError('user with this email wasn\'t found');
 
         if (!userFound.is_confirmed_email) {
-            throw new ValidationError('You need to confirm your email first');
+            throw new Error('You need to confirm your email first');
         }
 
         const passwordIsGood = await bcrypt.compare(userData.password, userFound.password);
@@ -104,7 +106,7 @@ export class AuthService {
     }
 
     async confirmEmailVerificationInDB(tokenData: Tokens): Promise<Users> {
-        const user = await this.usersRepository.findOneOrFail(tokenData.userId);
+        const user = await this.usersRepository.findOne(tokenData.userId);
         const updatedUser = Object.assign(user, tokenData.userId, { is_confirmed_email: true });
 
         return this.usersRepository.save(updatedUser);

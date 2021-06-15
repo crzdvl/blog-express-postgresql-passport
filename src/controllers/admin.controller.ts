@@ -11,7 +11,7 @@ import { BaseController } from './base.controller';
 
 interface AdminServiceDTO {
     getAll(page: number): Promise<Users[]>;
-    getById(id: number): Promise<Users>;
+    getById(id: number): Promise<Users | undefined>;
     update(data: any): Promise<Users>;
 }
 

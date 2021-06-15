@@ -5,7 +5,7 @@ import { getConnection } from 'typeorm';
 import { Tokens } from '../entities/tokens';
 
 const job = new CronJob(
-    '* * * * *',
+    '*/5 * * * *', // every 5 minutes
     (async () => {
         console.log(chalk.bgGreen(chalk.black('meow:')), chalk.green('remove expired tokens'));
 

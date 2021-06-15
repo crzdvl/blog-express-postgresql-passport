@@ -4,9 +4,7 @@ import {
 } from 'class-validator';
 
 export class RefreshTokenModel {
-    @IsNotEmpty({
-        message: 'Name needs to have $constraint1 - $constraint2 characters.',
-    })
+    @IsNotEmpty()
     @IsJWT({
         message: 'Jwt isn\'t valid.',
     })

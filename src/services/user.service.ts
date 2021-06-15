@@ -28,12 +28,12 @@ export class UserService {
       });
   }
 
-  async getById(id: number): Promise<Users> {
-      return this.repository.findOneOrFail(id);
+  async getById(id: number): Promise<Users | undefined> {
+      return this.repository.findOne(id);
   }
 
-  async getUserByEmail(email: string): Promise<Users> {
-      return this.repository.findOneOrFail({ email });
+  async getUserByEmail(email: string): Promise<Users | undefined> {
+      return this.repository.findOne({ email });
   }
 
   async update(userData: DBUserDataDTO): Promise<Users> {
