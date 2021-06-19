@@ -67,8 +67,12 @@ export class AuthService {
         return userFound;
     }
 
-    async getTokenFromDB(token: string, type: TokenType): Promise<Tokens | undefined> {
-        return this.tokensRepository.findOne({ token, type });
+    async getTokenFromDB(token: string, type: TokenType): Promise<Tokens> {
+        const result = await this.tokensRepository.findOne({ token, type });
+
+        if (!result) throw new ValidationError('token isn\'t valid more');
+
+        return result;
     }
 
     async generateToken(

@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import ejs from 'ejs';
 import { DeleteResult } from 'typeorm';
 import { inject } from 'inversify';
 import * as express from 'express';
@@ -19,7 +20,6 @@ import { AuthService } from '../services/auth.service';
 import { BaseService } from '../services/base.service';
 import { MailService } from '../services/mail.service';
 
-import ValidationError from '../error/ValidationError';
 import { AuthSerializer } from '../config/jsonApiSerializer';
 import UserPasswordResetModel from '../models/userPasswordResetModel.model';
 import EmailModel from '../models/emailModel';
@@ -38,13 +38,22 @@ export class AuthController extends BaseHttpController {
     public async create(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserSignupModel = new UserSignupModel({ ...req.body });
 
-        const error = await this.baseService.validateData(userData);
-        if (!_.isNull(error)) throw new ValidationError(error);
+        await this.baseService.validateData(userData);
 
         const userDataResult: DBUserDataDTO = await this.authService.register(req.body);
 
         const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
-        await this.mailService.sendEmailVerification(userDataResult.email, email_token.token);
+
+        const letter = await ejs.renderFile(
+            `${__dirname}/../views/email-verification.ejs`,
+            {
+                user_name: userDataResult.name,
+                confirm_link: `${process.env.BACKEND_HOST}/auth/verificateEmail?token=${email_token.token}`,
+                frontend_link: process.env.FRONTEND_HOST,
+            },
+        );
+
+        await this.mailService.sendEmail(userDataResult.email, 'BLOG email verification ✔', letter);
 
         return this.json(
             AuthSerializer.serialize({
@@ -57,10 +66,10 @@ export class AuthController extends BaseHttpController {
     public async loginUser(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserLoginModel = new UserLoginModel({ ...req.body });
 
-        const error = await this.baseService.validateData(userData);
-        if (!_.isNull(error)) throw new ValidationError(error);
+        await this.baseService.validateData(userData);
 
         const userDataResult: DBUserDataDTO = await this.authService.authenticate(req.body);
+
         const access_token = await this.authService.generateToken(userDataResult, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(userDataResult, 'refresh_token', 86400);
 
@@ -79,13 +88,11 @@ export class AuthController extends BaseHttpController {
     public async refreshToken(@request() req: express.Request): Promise<JsonResult | BadRequestErrorMessageResult> {
         const userToken: RefreshTokenModel = new RefreshTokenModel(req.body.refresh_token);
 
-        const error = await this.baseService.validateData(userToken);
-        if (!_.isNull(error)) throw new ValidationError(error);
+        await this.baseService.validateData(userToken);
 
         const tokenInDB = await this.authService.getTokenFromDB(userToken.refresh_token, 'refresh_token');
-        if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
 
-        const decodedToken = await this.authService.verifyToken(userToken.refresh_token);
+        const decodedToken = await this.authService.verifyToken(tokenInDB.token);
 
         const access_token = await this.authService.generateToken(decodedToken, 'access_token', 3600);
         const refresh_token = await this.authService.generateToken(decodedToken, 'refresh_token', 86400);
@@ -106,30 +113,29 @@ export class AuthController extends BaseHttpController {
         return this.authService.deleteUser(id);
     }
 
-    @httpGet('/sendResetRequest')
-    public async sendResetRequest(
+    @httpGet('/sendRequestToEmailVerification')
+    public async sendRequestToEmailVerification(
         @queryParam('email') email: string,
-        @queryParam('query') query: 'password' | 'email',
     ): Promise<JsonResult> {
         const userEmail: EmailModel = new EmailModel({ email });
-
-        const error = await this.baseService.validateData(userEmail);
-        if (!_.isNull(error)) throw new ValidationError(error);
+        await this.baseService.validateData(userEmail);
 
         const userDataResult = await this.userService.getUserByEmail(email);
-        if (_.isUndefined(userDataResult)) throw new ValidationError('we don\'t have account in database with this email');
 
-        if (userDataResult.is_confirmed_email) {
-            throw new Error('Your email is already confirmed');
-        }
+        if (userDataResult.is_confirmed_email) throw new Error('Your email is already confirmed');
 
-        if (query === 'password') {
-            const password_token = await this.authService.generateToken(userDataResult, 'password_token', 180);
-            await this.mailService.sendLinkForPasswordReset(userDataResult.email, password_token.token);
-        } else {
-            const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
-            await this.mailService.sendEmailVerification(userDataResult.email, email_token.token);
-        }
+        const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
+
+        const letter = await ejs.renderFile(
+            `${__dirname}/../views/email-verification.ejs`,
+            {
+                user_name: userDataResult.name,
+                confirm_link: `${process.env.BACKEND_HOST}/auth/verificateEmail?token=${email_token.token}`,
+                frontend_link: process.env.FRONTEND_HOST,
+            },
+        );
+
+        await this.mailService.sendEmail(userDataResult.email, 'BLOG email verification ✔', letter);
 
         return this.json(
             AuthSerializer.serialize({
@@ -141,25 +147,52 @@ export class AuthController extends BaseHttpController {
     @httpGet('/verificateEmail')
     public async verificateEmail(@queryParam('token') token: string): Promise<RedirectResult> {
         const tokenInDB = await this.authService.getTokenFromDB(token, 'email_token');
-        if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
 
-        const decodedToken = await this.authService.verifyToken(token);
+        const decodedToken = await this.authService.verifyToken(tokenInDB.token);
+
         await this.authService.confirmEmailVerificationInDB(decodedToken);
 
         return this.redirect(process.env.FRONTEND_HOST!);
+    }
+
+    @httpGet('/sendRequestToPasswordReset')
+    public async sendRequestToPasswordReset(
+        @queryParam('email') email: string,
+    ): Promise<JsonResult> {
+        const userEmail: EmailModel = new EmailModel({ email });
+        await this.baseService.validateData(userEmail);
+
+        const userDataResult = await this.userService.getUserByEmail(email);
+
+        const password_token = await this.authService.generateToken(userDataResult, 'password_token', 180);
+
+        const letter = await ejs.renderFile(
+            `${__dirname}/../views/password-reset.ejs`,
+            {
+                user_name: userDataResult.name,
+                confirm_link: `${process.env.FRONTEND_HOST}/auth/passwordReset?token=${password_token.token}`,
+                frontend_link: process.env.FRONTEND_HOST,
+            },
+        );
+
+        await this.mailService.sendEmail(userDataResult.email, 'BLOG password reset ✔', letter);
+
+        return this.json(
+            AuthSerializer.serialize({
+                email,
+            }),
+        );
     }
 
     @httpPost('/passwordReset')
     public async passwordReset(@request() req: express.Request): Promise<JsonResult> {
         const userData: UserPasswordResetModel = new UserPasswordResetModel({ ...req.body });
 
-        const error = await this.baseService.validateData(userData);
-        if (!_.isNull(error)) throw new ValidationError(error);
+        await this.baseService.validateData(userData);
 
         const tokenInDB = await this.authService.getTokenFromDB(req.body.token, 'password_token');
-        if (_.isUndefined(tokenInDB)) throw new ValidationError('token isn\'t valid more');
 
-        const decodedToken = await this.authService.verifyToken(userData.token);
+        const decodedToken = await this.authService.verifyToken(tokenInDB.token);
 
         await this.userService.update({
             id: decodedToken.id,

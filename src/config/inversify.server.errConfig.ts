@@ -16,7 +16,7 @@ export const errConfig = (app: express.Application): void => {
 
         res.status(status);
 
-        const message = status >= 500 ? 'INTERNAL_SERVER_ERROR' : err.message;
+        const message = err.message || 'INTERNAL_SERVER_ERROR';
 
         console.error(chalk.bold.red(err));
 

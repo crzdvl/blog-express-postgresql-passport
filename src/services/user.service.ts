@@ -5,6 +5,7 @@ import {
     Repository,
 } from 'typeorm';
 
+import ValidationError from '../error/ValidationError';
 import { Users } from '../entities/users';
 import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 
@@ -32,8 +33,12 @@ export class UserService {
       return this.repository.findOne(id);
   }
 
-  async getUserByEmail(email: string): Promise<Users | undefined> {
-      return this.repository.findOne({ email });
+  async getUserByEmail(email: string): Promise<Users> {
+      const result = await this.repository.findOne({ email });
+
+      if (!result) throw new ValidationError('we don\'t have account in database with this email');
+
+      return result;
   }
 
   async update(userData: DBUserDataDTO): Promise<Users> {

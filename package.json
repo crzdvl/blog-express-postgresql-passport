@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@types/cron": "^1.7.2",
+    "@types/ejs": "^3.0.6",
     "@types/jsonapi-serializer": "3.6.3",
     "@types/jsonwebtoken": "8.5.1",
     "@types/lodash": "4.14.168",
@@ -44,6 +45,7 @@
     "cors": "2.8.5",
     "cron": "^1.8.2",
     "dotenv": "8.2.0",
+    "ejs": "^3.1.6",
     "es6-shim": "0.35.6",
     "express": "4.17.1",
     "faker": "5.5.3",
