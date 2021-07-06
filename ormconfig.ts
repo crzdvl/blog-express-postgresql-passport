@@ -7,7 +7,7 @@ export = {
     password: process.env.DATABASE_PASSWORD,
     synchronize: true,
     logging: true,
-    entities: ['src/**/*.ts'],
+    entities: ['src/entities/*.ts'],
     seeds: ['database/seeds/*.ts'],
     factories: ['database/factories/*.ts'],
 };

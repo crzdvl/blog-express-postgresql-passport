@@ -14,7 +14,7 @@ import CommentModel from '../models/commentModel';
 
 @controller('/comments')
 export class CommentController {
-    @inject(TYPES.PostService) declare public service: CommentService;
+    @inject(TYPES.CommentService) declare public service: CommentService;
 
     @inject(TYPES.BaseService) public baseService: BaseService;
 

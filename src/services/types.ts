@@ -4,4 +4,7 @@ export const TYPES = {
     BaseService: Symbol.for('BaseService'),
     MailService: Symbol.for('MailService'),
     PostService: Symbol.for('PostService'),
+    PostLikeService: Symbol.for('PostLikeService'),
+    CommentLikeService: Symbol.for('CommentLikeService'),
+    CommentService: Symbol.for('CommentService'),
 };

@@ -4,6 +4,7 @@ import {
     Column,
     ManyToOne,
     CreateDateColumn,
+    OneToMany,
 } from 'typeorm';
 
 import { Users } from './users';
