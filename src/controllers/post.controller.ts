@@ -26,7 +26,7 @@ export class PostController {
     @httpGet('/findOne')
     public async findOne(@queryParam('id') id: number): Promise<Posts> {
         const userDataResult = await this.service.getById(id);
-        if (!userDataResult) throw new ValidationError('user hasn\'t been found');
+        if (!userDataResult) throw new ValidationError('post hasn\'t been found');
 
         return userDataResult;
     }
@@ -37,7 +37,7 @@ export class PostController {
         await this.baseService.validateData(userData);
 
         const userDataResult = await this.service.create(req.body);
-        if (!userDataResult) throw new ValidationError('user hasn\'t been created');
+        if (!userDataResult) throw new ValidationError('post hasn\'t been created');
 
         return userDataResult;
     }
