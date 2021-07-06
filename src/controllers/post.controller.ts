@@ -25,21 +25,21 @@ export class PostController {
 
     @httpGet('/findOne')
     public async findOne(@queryParam('id') id: number): Promise<Posts> {
-        const userDataResult = await this.service.getById(id);
-        if (!userDataResult) throw new ValidationError('post hasn\'t been found');
+        const postDataResult = await this.service.getById(id);
+        if (!postDataResult) throw new ValidationError('post hasn\'t been found');
 
-        return userDataResult;
+        return postDataResult;
     }
 
     @httpPost('/')
     public async create(@request() req: express.Request): Promise<Posts> {
-        const userData: PostModel = new PostModel(req.body);
-        await this.baseService.validateData(userData);
+        const postData: PostModel = new PostModel(req.body);
+        await this.baseService.validateData(postData);
 
-        const userDataResult = await this.service.create(req.body);
-        if (!userDataResult) throw new ValidationError('post hasn\'t been created');
+        const postDataResult = await this.service.create(req.body);
+        if (!postDataResult) throw new ValidationError('post hasn\'t been created');
 
-        return userDataResult;
+        return postDataResult;
     }
 
     @httpPut('/')
