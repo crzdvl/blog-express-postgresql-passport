@@ -6,21 +6,16 @@ import {
     CreateDateColumn,
 } from 'typeorm';
 
+import { Posts } from './posts';
 import { Users } from './users';
 
-@Entity('posts')
-export class Posts {
+@Entity('comments')
+export class Comments {
     @PrimaryGeneratedColumn()
     public id: number;
 
     @Column()
-    public title: string;
-
-    @Column()
-    public subtitle: string;
-
-    @Column()
-    public text: string;
+    public message: string;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
     public created_at: string;
@@ -30,4 +25,10 @@ export class Posts {
 
     @Column()
     userId: number;
+
+    @ManyToOne(() => Posts, (post) => post.id, { onDelete: 'CASCADE' })
+    post: Posts;
+
+    @Column()
+    postId: number;
 }
