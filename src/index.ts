@@ -7,6 +7,7 @@ import './controllers/user.controller';
 import './controllers/blogger.controller';
 import './controllers/admin.controller';
 import './controllers/auth.controller';
+import './controllers/post.controller';
 
 import container from './inversify.config';
 import { getDbConnection } from './config/db';

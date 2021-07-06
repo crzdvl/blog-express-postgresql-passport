@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 
 import { Roles } from './roles';
 import { Tokens } from './tokens';
+import { Posts } from './posts';
 
 @Entity('users')
 export class Users {
@@ -28,6 +29,11 @@ export class Users {
 
     @Column()
     public is_confirmed_email: boolean;
+
+    @OneToMany(() => Posts, (post) => post.id, {
+        cascade: true,
+    })
+    posts: Posts[];
 
     @ManyToMany(() => Roles, (role) => role.id, {
         cascade: true,
