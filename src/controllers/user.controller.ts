@@ -1,13 +1,16 @@
 import { inject } from 'inversify';
 import {
-    controller, httpGet,
+    controller, httpPost, request,
 } from 'inversify-express-utils';
 
+import express from 'express';
 import { TYPES } from '../services/types';
 import { UserService } from '../services/user.service';
 
 import { Users } from '../entities/users';
 import { BaseController } from './base.controller';
+import { BaseService } from '../services/base.service';
+import FollowModel from '../models/followModel';
 
 interface UserServiceDTO {
     getAll(page: number): Promise<Users[]>;
@@ -17,10 +20,18 @@ interface UserServiceDTO {
 
 @controller('/user')
 export class UserController extends BaseController<UserServiceDTO> {
-    @inject(TYPES.UserService) public service: UserService;
+    @inject(TYPES.UserService) declare public service: UserService;
 
-    @httpGet('/user')
-    public async user(): Promise<string> {
-        return 'user';
+    @inject(TYPES.BaseService) public baseService: BaseService;
+
+    @httpPost('/startToFollow')
+    public async startToFollow(@request() req: express.Request): Promise<any> {
+        const data: FollowModel = new FollowModel({ ...req.body });
+        await this.baseService.validateData(data);
+
+        await this.service.checkRoleOfMember(req.body.bloggerId, 'blogger');
+        await this.service.checkRoleOfMember(req.body.userId, 'user');
+
+        return this.service.create(req.body.bloggerId, req.body.userId);
     }
 }

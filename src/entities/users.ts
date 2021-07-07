@@ -38,7 +38,9 @@ export class Users {
     @ManyToMany(() => Roles, (role) => role.id, {
         cascade: true,
     })
-    @JoinTable()
+    @JoinTable({
+        name: 'users_roles',
+    })
     roles: Roles[];
 
     @OneToMany(() => Tokens, (token) => token.id, {
