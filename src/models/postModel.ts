@@ -13,7 +13,7 @@ export default class PostModel {
     text: string;
 
     @IsString()
-    userId: number;
+    bloggerId: number;
 
     constructor(source: Partial<PostModel>) {
         Object.assign(this, source);

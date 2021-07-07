@@ -11,10 +11,13 @@ import { PostService } from '../services/post.service';
 import ValidationError from '../error/ValidationError';
 import { BaseService } from '../services/base.service';
 import PostModel from '../models/postModel';
+import { UserService } from '../services/user.service';
 
 @controller('/posts')
 export class PostController {
     @inject(TYPES.PostService) declare public service: PostService;
+
+    @inject(TYPES.UserService) declare public userService: UserService;
 
     @inject(TYPES.BaseService) public baseService: BaseService;
 
@@ -35,6 +38,8 @@ export class PostController {
     public async create(@request() req: express.Request): Promise<Posts> {
         const postData: PostModel = new PostModel(req.body);
         await this.baseService.validateData(postData);
+
+        await this.userService.checkRoleOfMember(req.body.bloggerId, 'blogger');
 
         const postDataResult = await this.service.create(req.body);
         if (!postDataResult) throw new ValidationError('post hasn\'t been created');

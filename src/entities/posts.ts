@@ -4,7 +4,6 @@ import {
     Column,
     ManyToOne,
     CreateDateColumn,
-    OneToMany,
 } from 'typeorm';
 
 import { Users } from './users';
@@ -27,8 +26,8 @@ export class Posts {
     public created_at: string;
 
     @ManyToOne(() => Users, (user) => user.id, { onDelete: 'CASCADE' })
-    user: Users;
+    blogger: Users;
 
     @Column()
-    userId: number;
+    bloggerId: number;
 }

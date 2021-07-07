@@ -49,7 +49,7 @@ export class Users {
     tokens: Tokens[];
 
     @BeforeInsert()
-    async setPassword(password: string) {
+    async setPassword(password: string): Promise<void> {
         this.password = await bcrypt.hash(password || this.password, 5);
     }
 }

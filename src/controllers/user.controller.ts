@@ -4,6 +4,7 @@ import {
 } from 'inversify-express-utils';
 
 import express from 'express';
+import { JsonResult } from 'inversify-express-utils/dts/results';
 import { TYPES } from '../services/types';
 import { UserService } from '../services/user.service';
 
@@ -25,6 +26,7 @@ export class UserController extends BaseController<UserServiceDTO> {
     @inject(TYPES.BaseService) public baseService: BaseService;
 
     @httpPost('/startToFollow')
+    // FIX: remove return 'any'
     public async startToFollow(@request() req: express.Request): Promise<any> {
         const data: FollowModel = new FollowModel({ ...req.body });
         await this.baseService.validateData(data);
@@ -33,5 +35,13 @@ export class UserController extends BaseController<UserServiceDTO> {
         await this.service.checkRoleOfMember(req.body.userId, 'user');
 
         return this.service.create(req.body.bloggerId, req.body.userId);
+    }
+
+    @httpPost('/feed')
+    // FIX: remove return 'any'
+    public async feed(@request() req: express.Request): Promise<any> {
+        await this.service.checkRoleOfMember(req.body.userId, 'user');
+
+        return this.service.getFeed(req.body.userId);
     }
 }

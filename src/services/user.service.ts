@@ -1,7 +1,6 @@
 import { injectable } from 'inversify';
 import bcrypt from 'bcrypt';
-import {
-    createQueryBuilder,
+import {,
     getConnection,
     Repository,
 } from 'typeorm';
@@ -10,6 +9,7 @@ import ValidationError from '../error/ValidationError';
 import { Users } from '../entities/users';
 import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 import { Followers } from '../entities/followers';
+import { Posts } from '../entities/posts';
 
 export interface IUser {
   email: string;
@@ -75,5 +75,15 @@ export class UserService {
       if (!user) throw new Error('member hasn\'t been found or doesn\'t have appropriate role');
 
       return user.roles.some((e) => e.role === role) || false;
+  }
+
+  // FIX: change return 'any'
+  getFeed(id: number): any {
+      return this.followersRepository
+          .createQueryBuilder('followers')
+          .where('followers.user = :id', { id })
+          .innerJoin(Posts, 'post', 'post.bloggerId = followers.blogger')
+          .select(['followers.blogger', 'post.id', 'post.title', 'post.subtitle', 'post.text', 'post.created_at'])
+          .getRawMany();
   }
 }

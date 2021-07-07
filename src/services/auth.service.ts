@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { inject, injectable } from 'inversify';
 import { DeleteResult, getConnection, In, Repository } from 'typeorm';
 
-import { date } from 'faker';
 import _ from 'lodash';
 import { Users } from '../entities/users';
 import { Roles } from '../entities/roles';
@@ -87,7 +86,7 @@ export class AuthService {
         },
             process.env.TOKEN_SECRET!, { expiresIn });
 
-        // current time in ms + expires in coverted from s to ms
+        // current time in ms + expires in converted from s to ms
         const finished_at = new Date(new Date().getTime() + expiresIn * 1000).toISOString();
 
         return this.tokensRepository.save({
