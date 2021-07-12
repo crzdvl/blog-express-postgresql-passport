@@ -51,17 +51,12 @@ export class AuthService {
 
     async authenticate(userData: UserLoginModel): Promise<Users> {
         const userFound = await this.userService.getUserByEmail(userData.email);
-        if (_.isUndefined(userFound)) throw new ValidationError('user with this email wasn\'t found');
 
-        if (!userFound.is_confirmed_email) {
-            throw new Error('You need to confirm your email first');
-        }
+        if (!userFound.is_confirmed_email) throw new Error('You need to confirm your email first');
 
         const passwordIsGood = await bcrypt.compare(userData.password, userFound.password);
 
-        if (!passwordIsGood) {
-            throw new ValidationError('Your password is incorrect');
-        }
+        if (!passwordIsGood) throw new ValidationError('Your password is incorrect');
 
         return userFound;
     }

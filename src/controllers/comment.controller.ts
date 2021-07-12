@@ -8,9 +8,8 @@ import { Comments } from 'src/entities/comments';
 
 import { TYPES } from '../services/types';
 import { CommentService } from '../services/comment.service';
-import ValidationError from '../error/ValidationError';
 import { BaseService } from '../services/base.service';
-import CommentModel from '../models/commentModel';
+import CommentModel from '../models/comment.model';
 
 @controller('/comments')
 export class CommentController {
@@ -19,16 +18,16 @@ export class CommentController {
     @inject(TYPES.BaseService) public baseService: BaseService;
 
     @httpGet('/')
-    public async find(@queryParam('page') page: number): Promise<Comments[]> {
-        return this.service.getAll(page);
+    public async find(
+        @queryParam('page') page: number,
+        @queryParam('page') per: number,
+    ): Promise<Comments[]> {
+        return this.service.getAll(page, per);
     }
 
     @httpGet('/findOne')
-    public async findOne(@queryParam('id') id: number): Promise<Comments> {
-        const commentDataResult = await this.service.getById(id);
-        if (!commentDataResult) throw new ValidationError('comment hasn\'t been found');
-
-        return commentDataResult;
+    public findOne(@queryParam('id') id: number): Promise<Comments> {
+        return this.service.getById(id);
     }
 
     @httpPost('/')
@@ -36,10 +35,7 @@ export class CommentController {
         const commentData: CommentModel = new CommentModel(req.body);
         await this.baseService.validateData(commentData);
 
-        const commentDataResult = await this.service.create(req.body);
-        if (!commentDataResult) throw new ValidationError('comment hasn\'t been created');
-
-        return commentDataResult;
+        return this.service.create(req.body);
     }
 
     @httpPut('/')

@@ -22,7 +22,7 @@ import { MailService } from '../services/mail.service';
 
 import { AuthSerializer } from '../config/jsonApiSerializer';
 import UserPasswordResetModel from '../models/userPasswordResetModel.model';
-import EmailModel from '../models/emailModel';
+import EmailModel from '../models/email.model';
 
 @controller('/auth')
 export class AuthController extends BaseHttpController {
@@ -45,7 +45,7 @@ export class AuthController extends BaseHttpController {
         const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
 
         const letter = await ejs.renderFile(
-            `${__dirname}/../views/email-verification.ejs`,
+            `${__dirname}/../emailTemplates/email-verification.ejs`,
             {
                 user_name: userDataResult.name,
                 confirm_link: `${process.env.BACKEND_HOST}/auth/verificateEmail?token=${email_token.token}`,
@@ -127,7 +127,7 @@ export class AuthController extends BaseHttpController {
         const email_token = await this.authService.generateToken(userDataResult, 'email_token', 180);
 
         const letter = await ejs.renderFile(
-            `${__dirname}/../views/email-verification.ejs`,
+            `${__dirname}/../emailTemplates/email-verification.ejs`,
             {
                 user_name: userDataResult.name,
                 confirm_link: `${process.env.BACKEND_HOST}/auth/verificateEmail?token=${email_token.token}`,
@@ -167,7 +167,7 @@ export class AuthController extends BaseHttpController {
         const password_token = await this.authService.generateToken(userDataResult, 'password_token', 180);
 
         const letter = await ejs.renderFile(
-            `${__dirname}/../views/password-reset.ejs`,
+            `${__dirname}/../emailTemplates/password-reset.ejs`,
             {
                 user_name: userDataResult.name,
                 confirm_link: `${process.env.FRONTEND_HOST}/auth/passwordReset?token=${password_token.token}`,

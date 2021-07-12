@@ -5,7 +5,7 @@ import {
 
 @controller('/')
 export class HomeController {
-  @httpGet('/')
+    @httpGet('/')
     public get(): string {
         return 'Home sweet home';
     }

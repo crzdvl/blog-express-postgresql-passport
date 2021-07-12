@@ -10,14 +10,14 @@ import { Users } from '../entities/users';
 import { BaseController } from './base.controller';
 
 interface BloggerServiceDTO {
-    getAll(page: number): Promise<Users[]>;
+    getAll(page: number, per: number): Promise<Users[]>;
     getById(id: number): Promise<Users | undefined>;
     update(data: any): Promise<Users>;
 }
 
 @controller('/blogger')
 export class BloggerController extends BaseController<BloggerServiceDTO> {
-    @inject(TYPES.UserService) public service: UserService;
+    @inject(TYPES.UserService) declare public service: UserService;
 
     @httpGet('/blogger')
     public async blogger(): Promise<string> {

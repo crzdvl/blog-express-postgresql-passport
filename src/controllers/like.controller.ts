@@ -3,10 +3,8 @@ import { inject } from 'inversify';
 import {
     controller, httpGet, httpPut, httpPost, httpDelete, queryParam, request,
 } from 'inversify-express-utils';
-import _ from 'lodash';
 
 import { TYPES } from '../services/types';
-import ValidationError from '../error/ValidationError';
 import { BaseService } from '../services/base.service';
 import { PostLikeService } from '../services/postLike.service';
 import { CommentLikeService } from '../services/commentLike.service';
@@ -14,7 +12,7 @@ import { CommentLikeService } from '../services/commentLike.service';
 import { PostLikes } from '../entities/postLikes';
 import { CommentLikes } from '../entities/commentLikes';
 
-import LikeModel from '../models/likeModel';
+import LikeModel from '../models/like.model';
 
 @controller('/likes')
 export class LikeController {
@@ -27,11 +25,12 @@ export class LikeController {
     @httpGet('/')
     public async find(
         @queryParam('page') page: number,
+        @queryParam('per') per: number,
         @queryParam('type') type: 'comment' | 'post',
     ): Promise<PostLikes[] | CommentLikes[]> {
-        if (type === 'comment') return this.commentLikeService.getAll(page);
+        if (type === 'comment') return this.commentLikeService.getAll(page, per);
 
-        return this.postLikeService.getAll(page);
+        return this.postLikeService.getAll(page, per);
     }
 
     @httpGet('/findOne')
@@ -39,35 +38,25 @@ export class LikeController {
         @queryParam('id') id: number,
         @queryParam('type') type: 'comment' | 'post',
     ): Promise<PostLikes | CommentLikes> {
-        let likeDataResult: CommentLikes | undefined;
+        let likeDataResult: CommentLikes;
 
         if (type === 'comment') {
             likeDataResult = await this.commentLikeService.getById(id);
         } else likeDataResult = await this.commentLikeService.getById(id);
-
-        if (!likeDataResult) throw new ValidationError('like hasn\'t been found');
 
         return likeDataResult;
     }
 
     @httpPost('/')
     public async create(@request() req: express.Request): Promise<PostLikes | CommentLikes> {
-        console.log(req.body);
-
         const likeModel: LikeModel = new LikeModel(req.body);
         await this.baseService.validateData(likeModel);
 
         if (req.body.type === 'comment') {
-            const likeDataResult = await this.commentLikeService.create(req.body);
-            if (!likeDataResult) throw new ValidationError('like hasn\'t been created');
-
-            return likeDataResult;
+            return this.commentLikeService.create(req.body);
         }
 
-        const likeDataResult = await this.postLikeService.create(req.body);
-        if (!likeDataResult) throw new ValidationError('like hasn\'t been created');
-
-        return likeDataResult;
+        return this.postLikeService.create(req.body);
     }
 
     @httpPut('/')

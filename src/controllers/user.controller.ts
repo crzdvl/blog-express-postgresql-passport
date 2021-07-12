@@ -4,17 +4,18 @@ import {
 } from 'inversify-express-utils';
 
 import express from 'express';
-import { JsonResult } from 'inversify-express-utils/dts/results';
+import { UserFeedDTO } from 'src/interfaces/UserFeedDTO';
 import { TYPES } from '../services/types';
 import { UserService } from '../services/user.service';
 
 import { Users } from '../entities/users';
 import { BaseController } from './base.controller';
 import { BaseService } from '../services/base.service';
-import FollowModel from '../models/followModel';
+import FollowModel from '../models/follow.model';
+import { Followers } from '../entities/followers';
 
 interface UserServiceDTO {
-    getAll(page: number): Promise<Users[]>;
+    getAll(page: number, per: number): Promise<Users[]>;
     getById(id: number): Promise<Users | undefined>;
     update(data: any): Promise<Users>;
 }
@@ -26,8 +27,7 @@ export class UserController extends BaseController<UserServiceDTO> {
     @inject(TYPES.BaseService) public baseService: BaseService;
 
     @httpPost('/startToFollow')
-    // FIX: remove return 'any'
-    public async startToFollow(@request() req: express.Request): Promise<any> {
+    public async startToFollow(@request() req: express.Request): Promise<Followers> {
         const data: FollowModel = new FollowModel({ ...req.body });
         await this.baseService.validateData(data);
 
@@ -38,8 +38,7 @@ export class UserController extends BaseController<UserServiceDTO> {
     }
 
     @httpPost('/feed')
-    // FIX: remove return 'any'
-    public async feed(@request() req: express.Request): Promise<any> {
+    public async feed(@request() req: express.Request): Promise<UserFeedDTO[]> {
         await this.service.checkRoleOfMember(req.body.userId, 'user');
 
         return this.service.getFeed(req.body.userId);

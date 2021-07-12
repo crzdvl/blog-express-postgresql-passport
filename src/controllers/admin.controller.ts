@@ -10,14 +10,14 @@ import { Users } from '../entities/users';
 import { BaseController } from './base.controller';
 
 interface AdminServiceDTO {
-    getAll(page: number): Promise<Users[]>;
+    getAll(page: number, per: number): Promise<Users[]>;
     getById(id: number): Promise<Users | undefined>;
     update(data: any): Promise<Users>;
 }
 
 @controller('/admin')
 export class AdminController extends BaseController<AdminServiceDTO> {
-    @inject(TYPES.UserService) public service: UserService;
+    @inject(TYPES.UserService) declare public service: UserService;
 
     @httpGet('/admin')
     public async admin(): Promise<string> {

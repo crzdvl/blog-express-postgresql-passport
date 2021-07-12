@@ -7,42 +7,61 @@ import {
 
 import { DBUserDataDTO } from '../interfaces/DBUserDataDTO';
 import { Posts } from '../entities/posts';
+import ValidationError from '../error/ValidationError';
+import { Comments } from '../entities/comments';
 
 @injectable()
 export class PostService {
-  private repository: Repository<Posts>;
+    private repository: Repository<Posts>;
 
-  constructor() {
-      this.repository = getConnection().getRepository<Posts>('posts');
-  }
+    private commentsRepository: Repository<Comments>;
 
-  async getAll(page: number): Promise<Posts[]> {
-      return this.repository.find({
-          skip: page ? page * 5 : 0,
-          take: 5,
-      });
-  }
+    constructor() {
+        this.repository = getConnection().getRepository<Posts>('posts');
+        this.commentsRepository = getConnection().getRepository<Comments>('comments');
+    }
 
-  async getById(id: number): Promise<Posts | undefined> {
-      return this.repository.findOne(id);
-  }
+    async getAll(page: number, per: number): Promise<Posts[]> {
+        return this.repository.find({
+            skip: page ? page * per : 0,
+            take: per,
+        });
+    }
 
-  async create(data: Posts): Promise<Posts | undefined> {
-      return this.repository.save(data);
-  }
+    async getComments(postId: number, page: number, per: number): Promise<Comments[]> {
+        return this.commentsRepository.find({
+            where: {
+                postId,
+            },
+            skip: page ? page * per : 0,
+            take: per,
+        });
+    }
 
-  async update(userData: DBUserDataDTO): Promise<Posts> {
-      const hashedPassword = await bcrypt.hash(userData.password, 5);
+    async getById(id: number): Promise<Posts> {
+        const result = await this.repository.findOne(id);
 
-      return this.repository.save({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          password: hashedPassword,
-      });
-  }
+        if (!result) throw new ValidationError('post hasn\'t been found');
 
-  async delete(id: number): Promise<string | any> {
-      return this.repository.delete(id);
-  }
+        return result;
+    }
+
+    async create(data: Posts): Promise<Posts> {
+        return this.repository.save(data);
+    }
+
+    async update(userData: DBUserDataDTO): Promise<Posts> {
+        const hashedPassword = await bcrypt.hash(userData.password, 5);
+
+        return this.repository.save({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            password: hashedPassword,
+        });
+    }
+
+    async delete(id: number): Promise<string | any> {
+        return this.repository.delete(id);
+    }
 }
